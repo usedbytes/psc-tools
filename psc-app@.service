@@ -1,0 +1,11 @@
+[Unit]
+Description=Application in programspace in %I
+Requires=psc-setup@%i.service
+After=psc-setup@%i.service
+
+[Service]
+Type=notify
+NotifyAccess=all
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/start-psc %I
+ExecStop=/usr/local/sbin/stop-psc %I

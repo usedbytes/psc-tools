@@ -1,0 +1,11 @@
+[Unit]
+Description=programspace in %I
+PartOf=psc-app@%i.service
+
+[Service]
+Type=notify
+NotifyAccess=all
+RemainAfterExit=yes
+Type=forking
+ExecStart=/usr/local/sbin/setup-psc %I
+ExecStop=/usr/local/sbin/teardown-psc %I
