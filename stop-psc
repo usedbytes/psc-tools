@@ -1,0 +1,49 @@
+#!/bin/sh
+# Copyright Brian Starkey <stark3y@gmail.com> 2017
+
+PSC="psc"
+DRY_RUN=0
+
+function usage() {
+	APP=$(/usr/bin/basename $0)
+	cat <<EOM
+Usage: $APP [--help] [--dry-run] PSC_DIR
+
+	Stop the programspace laid out in PSC_DIR.
+	The programspace should have been set up by 'setup-psc'
+
+	This will run "/usr/bin/init stop" in the programspace
+
+	Options:
+		--dry-run:       Print the commands instead of running them
+EOM
+}
+
+if [ -z $1 ]
+then
+	usage
+	exit 1
+elif [ $1 == "--dry-run" ]
+then
+	echo "DRY RUN"
+	PSC="echo $PSC"
+	DRY_RUN=1
+	shift
+fi
+
+PSC_DIR=$(/usr/bin/realpath -s $1)
+if [ ! -d $PSC_DIR ]
+then
+	echo "ERROR: PSC_DIR '$PSC_DIR' is not a directory." >&2
+	exit 1
+fi
+
+if [ ! -f $PSC_DIR/.psc ]
+then
+	echo "ERROR: Couldn't find $PSC_DIR/.psc, is the programspace set up?" >&2
+	exit 1
+fi
+PSC_NAME=$(/usr/bin/cat $PSC_DIR/.psc)
+
+# Start the programspace
+$PSC $PSC_NAME --run /usr/bin/init stop
