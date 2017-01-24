@@ -1,0 +1,130 @@
+#!/bin/sh
+# Copyright Brian Starkey <stark3y@gmail.com> 2017
+
+PSC="psc"
+MOUNT="mount"
+DRY_RUN=0
+
+function usage() {
+	APP=$(/usr/bin/basename $0)
+	cat <<EOM
+Usage: $APP [--help] [--dry-run] PSC_DIR [PSC_NAME]
+
+	Set up the programspace laid out in PSC_DIR.
+	If PSC_NAME is not specified, then the basename of PSC_DIR is used.
+
+	Will output the PID of the programspace daemon
+
+	Options:
+		--help:          Print detailed usage information
+		--dry-run:       Print the commands instead of running them
+EOM
+}
+
+function detailed_usage() {
+	usage
+	cat << EOM
+	PSC_DIR must have a specific structure:
+
+	PSC_DIR
+	|-lower
+	|  |-[lower_dir_0]
+	|  |  |- lower_files
+	|  |  '- ...
+	|  | ...
+	|  '-[lower_dir_n]
+	|  |  |- lower_files
+	|     '- ...
+	|-upper
+	|  |-data
+	|  |  |- upper_files
+	|  |  '- ...
+	|  '-work
+	'-rootfs
+
+	PSC_DIR/lower/*
+		All directories under 'lower' directories will be used as overlayfs
+		lowerdirs, in alphabetical order.
+
+	PSC_DIR/upper/data
+		Will be used as the overlayfs upperdir
+
+	PSC_DIR/upper/work
+		Will be used as the overlayfs workdir
+
+	PSC_DIR/rootfs
+		The overlayfs will be mounted here
+EOM
+}
+
+if [ -z $1 ]
+then
+	usage
+	exit 1
+elif [ $1 == "--help" ]
+then
+	detailed_usage
+	exit 0
+elif [ $1 == "--dry-run" ]
+then
+	echo "DRY RUN"
+	PSC="echo $PSC"
+	MOUNT="echo $MOUNT"
+	DRY_RUN=1
+	shift
+fi
+
+PSC_DIR=$(/usr/bin/realpath -s $1)
+if [ -z $2 ]
+then
+	PSC_NAME=$(/usr/bin/basename $PSC_DIR)
+else
+	PSC_NAME=$2
+fi
+
+if [ ! -d $PSC_DIR ]
+then
+	echo "ERROR: PSC_DIR '$PSC_DIR' is not a directory." >&2
+	exit 1
+fi
+
+if [ "$(id -u)" != "0" ]
+then
+	echo "ERROR: This script must be run as root" >&2
+	exit 1
+fi
+
+if [ -f $PSC_DIR/.psc ]
+then
+	echo "ERROR: Looks like PSC_DIR '$PSC_DIR' is already set up" >&2
+	echo "If you know what you are doing, you may remove $PSC_DIR/.psc" >&2
+	exit 1
+fi
+
+if [ $DRY_RUN -eq 0 ]
+then
+	echo $PSC_NAME > $PSC_DIR/.psc
+else
+	echo "echo $PSC_NAME > $PSC_DIR/.psc"
+fi
+
+# First, mount the dir onto itself to make it unshared
+$MOUNT --make-private --bind $PSC_DIR $PSC_DIR
+STARTDIR=$PWD
+cd $PSC_DIR
+
+# Create the programspace
+LOWERS=""
+for lower in `find -L ./lower -maxdepth 1 ! -path "./lower" -type d | sort`
+do
+	LOWERS+="$lower:"
+done
+LOWERS=${LOWERS%?}
+
+$MOUNT --make-private -t overlay overlay ./rootfs -o lowerdir=${LOWERS},upperdir=./upper/data,workdir=./upper/work
+
+$PSC $PSC_NAME --create ${PSC_DIR}/psc.log
+$PSC $PSC_NAME --ipc
+$PSC $PSC_NAME --chrootfs ${PSC_DIR}/rootfs
+
+cd $STARTDIR
