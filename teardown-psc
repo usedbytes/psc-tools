@@ -56,6 +56,7 @@ $PSC $PSC_NAME --kill
 
 # Unmount the overlay
 $UMOUNT ${PSC_DIR}/rootfs
+sync
 
 # Unmount the bind mount
 STARTDIR=$PWD
