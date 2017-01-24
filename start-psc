@@ -47,3 +47,5 @@ PSC_NAME=$(/usr/bin/cat $PSC_DIR/.psc)
 
 # Start the programspace
 $PSC $PSC_NAME --run /usr/bin/nohup /usr/bin/init start >/dev/null
+
+systemd-notify --ready

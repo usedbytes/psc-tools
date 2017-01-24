@@ -128,3 +128,5 @@ $PSC $PSC_NAME --ipc
 $PSC $PSC_NAME --chrootfs ${PSC_DIR}/rootfs
 
 cd $STARTDIR
+
+systemd-notify --ready
