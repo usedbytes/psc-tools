@@ -54,6 +54,10 @@ PSC_NAME=$(/usr/bin/cat $PSC_DIR/.psc)
 # Kill the programspace
 $PSC $PSC_NAME --kill
 
+# Unmount the tmpfses
+$UMOUNT ${PSC_DIR}/rootfs/run
+$UMOUNT ${PSC_DIR}/rootfs/tmp
+
 # Unmount the overlay
 $UMOUNT ${PSC_DIR}/rootfs
 sync

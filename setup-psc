@@ -123,6 +123,10 @@ LOWERS=${LOWERS%?}
 
 $MOUNT --make-private -t overlay overlay ./rootfs -o lowerdir=${LOWERS},upperdir=./upper/data,workdir=./upper/work
 
+# Mount /tmp and /run tmpfs
+$MOUNT tmpfs -t tmpfs ./rootfs/tmp -o nodev,nosuid,size=10M
+$MOUNT tmpfs -t tmpfs ./rootfs/run -o nodev,nosuid,size=10M
+
 $PSC $PSC_NAME --create ${PSC_DIR}/psc.log
 $PSC $PSC_NAME --ipc
 $PSC $PSC_NAME --chrootfs ${PSC_DIR}/rootfs
