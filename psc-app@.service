@@ -9,3 +9,6 @@ NotifyAccess=all
 RemainAfterExit=yes
 ExecStart=/usr/local/sbin/start-psc %I
 ExecStop=/usr/local/sbin/stop-psc %I
+
+[Install]
+WantedBy=multi-user.target
