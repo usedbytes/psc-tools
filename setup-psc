@@ -115,7 +115,7 @@ cd $PSC_DIR
 
 # Create the programspace
 LOWERS=""
-for lower in `find -L ./lower -maxdepth 1 ! -path "./lower" -type d | sort`
+for lower in `find -L ./lower -maxdepth 1 ! -path "./lower" -type d | sort -r`
 do
 	LOWERS+="$lower:"
 done
