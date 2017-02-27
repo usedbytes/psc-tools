@@ -1,0 +1,10 @@
+[Unit]
+Description=Timer for psc logrotate at %I
+
+[Timer]
+Persistent=yes
+OnCalendar=daily
+Unit=psc-logrotate@%i.service
+
+[Install]
+WantedBy=timers.target
