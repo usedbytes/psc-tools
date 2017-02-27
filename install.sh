@@ -14,3 +14,4 @@ install_sbin start-psc
 install_sbin stop-psc
 install_service psc-setup\@.service
 install_service psc-app\@.service
+install_service psc-logrotate\@.service

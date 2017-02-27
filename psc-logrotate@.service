@@ -1,0 +1,9 @@
+[Unit]
+Description=Log rotation for programspace in %I
+Requires=psc-setup@%i.service
+After=psc-setup@%i.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+ExecStart=/usr/bin/logrotate %I/logrotate.conf
